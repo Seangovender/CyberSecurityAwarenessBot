@@ -33,30 +33,27 @@ namespace CyberSecurityAwarenessBot
             try
             {
                 if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
                     return;
-                }
 
-                string audioPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "welcome.wav");
+                string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "welcome.wav");
 
-                if (File.Exists(audioPath))
+                if (File.Exists(path))
                 {
-                    SoundPlayer player = new SoundPlayer(audioPath);
+                    SoundPlayer player = new SoundPlayer(path);
                     player.Load();
-                    player.Play(); // changed from PlaySync()
+                    player.Play();
                 }
                 else
                 {
                     Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine("Voice greeting file not found. Continuing without audio...");
+                    Console.WriteLine("Audio file not found, continuing without sound...");
                     Console.ResetColor();
                 }
             }
-            catch (Exception ex)
+            catch
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine("Audio could not be played.");
-                Console.WriteLine($"Reason: {ex.Message}");
+                Console.WriteLine("Could not play audio.");
                 Console.ResetColor();
             }
         }
