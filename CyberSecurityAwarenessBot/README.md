@@ -47,3 +47,4 @@ The purpose of this project is to demonstrate basic C# programming concepts such
 - Improve the user interface
 - Store user responses
 - Convert the chatbot into a GUI application
+Updated README with final improvements and structure
