@@ -92,31 +92,27 @@ namespace CyberSecurityAwarenessBot
         {
             while (true)
             {
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.Write("Please enter your name: ");
-                Console.ResetColor();
-
+                Console.Write("Enter your name: ");
                 string? input = Console.ReadLine();
 
                 if (string.IsNullOrWhiteSpace(input))
                 {
-                    ShowError("Name cannot be empty. Please enter a valid name.");
+                    ShowError("Name cannot be empty.");
                     continue;
                 }
 
-                input = input.Trim();
-
-                if (input.Length < 2)
+                if (input.Trim().Length < 2)
                 {
-                    ShowError("Name must be at least 2 characters long.");
+                    ShowError("Name is too short, Name must be at least 2 characters long.");
                     continue;
                 }
 
-                userName = input;
+                userName = input.Trim();
+
                 Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine($"\nWelcome, {userName}! It is great to meet you.");
+                Console.WriteLine($"\nHi {userName}, welcome!\n");
                 Console.ResetColor();
-                Console.WriteLine();
+
                 break;
             }
         }
