@@ -10,14 +10,14 @@ namespace CyberSecurityAwarenessBot
 
             try
             {
-                CyberSecurityBot chatbot = new CyberSecurityBot();
-                chatbot.Run();
+                CyberSecurityBot bot = new CyberSecurityBot();
+                bot.Run();
             }
-            catch (Exception error)
+            catch (Exception ex)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("The program could not start properly.");
-                Console.WriteLine("Error: " + error.Message);
+                Console.WriteLine("The program could not start.");
+                Console.WriteLine("Error: " + ex.Message);
                 Console.ResetColor();
             }
         }
