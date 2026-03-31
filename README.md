@@ -1,4 +1,4 @@
-﻿# CyberSecurityAwarenessBot
+# CyberSecurityAwarenessBot
 
 ## Overview
 This project is a simple console-based chatbot built in C# to help users understand basic cybersecurity concepts. The chatbot focuses on common online threats such as phishing, weak passwords, scams, social engineering, and unsafe browsing.
