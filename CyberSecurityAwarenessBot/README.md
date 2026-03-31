@@ -48,3 +48,8 @@ The purpose of this project is to demonstrate basic C# programming concepts such
 - Store user responses
 - Convert the chatbot into a GUI application
 Updated README with final improvements and structure
+
+## Repository Layout
+- `CyberSecurityAwarenessBot/` – main C# project files
+- `.github/workflows/` – GitHub Actions CI workflow
+- `CyberSecurityAwarenessBot.sln` – Visual Studio solution file
