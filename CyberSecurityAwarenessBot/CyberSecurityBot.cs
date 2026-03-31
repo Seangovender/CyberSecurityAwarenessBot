@@ -82,8 +82,8 @@ namespace CyberSecurityAwarenessBot
         private void DisplayWelcomeMessage()
         {
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("Hello! Welcome to the Cybersecurity Awareness Bot system.");
-            Console.WriteLine("I am here to help you stay safe online.");
+            Console.WriteLine("Welcome to CYBERBOT.");
+            Console.WriteLine("This program will help you stay safe online.");
             Console.ResetColor();
             Console.WriteLine();
         }
