@@ -329,10 +329,10 @@ namespace CyberSecurityAwarenessBot
 
         private void Pause()
         {
-            Console.WriteLine();
             Console.ForegroundColor = ConsoleColor.DarkGray;
-            Console.WriteLine("Press Enter to continue...");
+            Console.WriteLine("\nPress Enter to go back to the menu...");
             Console.ResetColor();
+
             Console.ReadLine();
             Console.WriteLine();
         }
