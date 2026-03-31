@@ -3,7 +3,7 @@
 ## Overview
 This project is a simple console-based chatbot built in C# to help users understand basic cybersecurity concepts. The chatbot focuses on common online threats such as phishing, weak passwords, scams, social engineering, and unsafe browsing.
 
-The goal of this application is to give users easy and practical information so they can stay safer when using the internet.
+The goal of this application is to give users simple and practical information so they can stay safer when using the internet.
 
 ## Features
 - Voice greeting using a WAV audio file
