@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include=".github\workflows\dotnet-ci.yml" />
+    
   </ItemGroup>
 
   <ItemGroup>

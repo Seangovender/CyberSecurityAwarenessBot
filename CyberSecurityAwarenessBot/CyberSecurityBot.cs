@@ -2,20 +2,65 @@
 using System.IO;
 using System.Media;
 using System.Runtime.InteropServices;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace CyberSecurityAwarenessBot
 {
     public class CyberSecurityBot
     {
         private string userName = string.Empty;
+        private string lastTopic = string.Empty;
+        private string favoriteTopic = string.Empty;
         private bool isRunning = true;
+
+        // Dictionary of topics with lists of random tips
+        private readonly Dictionary<string, List<string>> topicTips = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["phishing"] = new List<string>
+            {
+                "🎣 Always check the sender's email address – scammers use slight misspellings.",
+                "🎣 Never click links in unexpected emails. Type the website address yourself.",
+                "🎣 If an email creates urgency ('Your account will be closed'), it's probably a scam."
+            },
+            ["password"] = new List<string>
+            {
+                "🔐 Use a different password for every account – don't reuse!",
+                "🔐 A strong password has 12+ characters, uppercase, numbers, and symbols.",
+                "🔐 Enable two‑factor authentication (2FA) wherever possible."
+            },
+            ["safe browsing"] = new List<string>
+            {
+                "🌐 Look for 'https://' and a padlock icon before entering personal info.",
+                "🌐 Avoid downloading files from untrusted websites.",
+                "🌐 Keep your browser and antivirus software updated automatically."
+            },
+            ["social engineering"] = new List<string>
+            {
+                "🧠 Never share OTPs or PINs – even if the caller sounds official.",
+                "🧠 Hang up and call the organisation back using a known number.",
+                "🧠 Be suspicious of anyone asking for urgent payments or gift cards."
+            },
+            ["scam"] = new List<string>
+            {
+                "⚠️ Ignore prizes you never entered – they're always traps.",
+                "⚠️ If someone asks for money via social media, verify with a phone call.",
+                "⚠️ Report scam messages to your bank or the real company."
+            },
+            ["privacy"] = new List<string>
+            {
+                "🛡️ Review your social media privacy settings every few months.",
+                "🛡️ Don't share your location or daily routines online.",
+                "🛡️ Use a VPN when on public Wi‑Fi (coffee shops, airports)."
+            }
+        };
 
         public void Run()
         {
             SetupConsole();
             DisplayAsciiArt();
             DisplayWelcomeMessage();
-            PlayVoiceGreeting(); // now plays in background
+            PlayVoiceGreeting();
             AskUserName();
             StartChatLoop();
             DisplayGoodbyeMessage();
@@ -36,24 +81,25 @@ namespace CyberSecurityAwarenessBot
                     return;
 
                 string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "welcome.wav");
-
                 if (File.Exists(path))
                 {
-                    SoundPlayer player = new SoundPlayer(path);
-                    player.Load();
-                    player.Play();
+                    using (SoundPlayer player = new SoundPlayer(path))
+                    {
+                        player.Load();
+                        player.Play(); // plays asynchronously
+                    }
                 }
                 else
                 {
                     Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine("Audio file not found, continuing without sound...");
+                    Console.WriteLine("[Audio file not found, continuing without sound]");
                     Console.ResetColor();
                 }
             }
             catch
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine("Could not play audio.");
+                Console.WriteLine("[Could not play audio]");
                 Console.ResetColor();
             }
         }
@@ -61,7 +107,6 @@ namespace CyberSecurityAwarenessBot
         private void DisplayAsciiArt()
         {
             Console.ForegroundColor = ConsoleColor.Cyan;
-
             Console.WriteLine("==============================================================");
             Console.WriteLine("   ____      _                              _ _         ");
             Console.WriteLine("  / ___|   _| |__   ___ _ __ ___  ___  ___ | (_)_ __    ");
@@ -71,7 +116,6 @@ namespace CyberSecurityAwarenessBot
             Console.WriteLine("       |___/                                            ");
             Console.WriteLine("        CYBERSECURITY AWARENESS ASSISTANT               ");
             Console.WriteLine("==============================================================");
-
             Console.ResetColor();
             Console.WriteLine();
         }
@@ -79,8 +123,8 @@ namespace CyberSecurityAwarenessBot
         private void DisplayWelcomeMessage()
         {
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("Welcome to CYBERBOT.");
-            Console.WriteLine("This program will help you stay safe online.");
+            Console.WriteLine("Welcome to CYBERBOT – your personal cybersecurity guide.");
+            Console.WriteLine("Type 'exit' or 'quit' to leave at any time.");
             Console.ResetColor();
             Console.WriteLine();
         }
@@ -89,7 +133,7 @@ namespace CyberSecurityAwarenessBot
         {
             while (true)
             {
-                Console.Write("Enter your name: ");
+                Console.Write("What is your name? ");
                 string? input = Console.ReadLine();
 
                 if (string.IsNullOrWhiteSpace(input))
@@ -97,19 +141,19 @@ namespace CyberSecurityAwarenessBot
                     ShowError("Name cannot be empty.");
                     continue;
                 }
-
                 if (input.Trim().Length < 2)
                 {
-                    ShowError("Name is too short, Name must be at least 2 characters long.");
+                    ShowError("Name must be at least 2 characters long.");
                     continue;
                 }
 
                 userName = input.Trim();
-
                 Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine($"\nHi {userName}, welcome!\n");
+                Console.WriteLine($"\nNice to meet you, {userName}! I can help you with topics like:");
+                Console.WriteLine("phishing, passwords, safe browsing, social engineering, scams, or privacy.");
+                Console.WriteLine("Just ask me anything – for example: 'Tell me about passwords'");
                 Console.ResetColor();
-
+                Console.WriteLine();
                 break;
             }
         }
@@ -118,204 +162,106 @@ namespace CyberSecurityAwarenessBot
         {
             while (isRunning)
             {
-                DisplayMenu();
-
                 Console.ForegroundColor = ConsoleColor.White;
-                Console.Write("Select an option (1-7): ");
+                Console.Write($"{userName}> ");
                 Console.ResetColor();
+                string? input = Console.ReadLine();
 
-                string? choice = Console.ReadLine();
-
-                if (string.IsNullOrWhiteSpace(choice))
+                if (string.IsNullOrWhiteSpace(input))
                 {
-                    ShowError("Input cannot be empty. Please choose a number from 1 to 7.");
+                    ShowError("Please type something – I'm here to help.");
                     continue;
                 }
 
-                switch (choice.Trim())
+                string lowerInput = input.ToLower().Trim();
+                if (lowerInput == "exit" || lowerInput == "quit")
                 {
-                    case "1":
-                        ExplainPhishing();
-                        break;
-                    case "2":
-                        ExplainPasswords();
-                        break;
-                    case "3":
-                        ExplainSafeBrowsing();
-                        break;
-                    case "4":
-                        ExplainSocialEngineering();
-                        break;
-                    case "5":
-                        ScamSafetyTips();
-                        break;
-                    case "6":
-                        QuickQuiz();
-                        break;
-                    case "7":
-                        isRunning = false;
-                        break;
-                    default:
-                        ShowError("Invalid option. Please select a number from 1 to 7.");
-                        break;
+                    isRunning = false;
+                    break;
                 }
+
+                // 1. Sentiment detection (returns null if none)
+                string? sentimentReply = DetectSentiment(lowerInput);
+                if (sentimentReply != null)
+                {
+                    Console.WriteLine($"\n💬 {sentimentReply}");
+                    Console.WriteLine();
+                    continue;
+                }
+
+                // 2. Follow-up / "tell me more"
+                if (IsRequestingMore(lowerInput) && !string.IsNullOrEmpty(lastTopic))
+                {
+                    string moreTip = GetRandomTip(lastTopic);
+                    Console.WriteLine($"\n💬 Here's another tip about {lastTopic}: {moreTip}");
+                    Console.WriteLine();
+                    continue;
+                }
+
+                // 3. Keyword matching
+                string? matchedTopic = topicTips.Keys.FirstOrDefault(t => lowerInput.Contains(t));
+                if (matchedTopic != null)
+                {
+                    lastTopic = matchedTopic;
+                    if (string.IsNullOrEmpty(favoriteTopic))
+                    {
+                        favoriteTopic = matchedTopic;
+                        Console.WriteLine($"\n💬 Great! I'll remember that you're interested in {matchedTopic}.");
+                    }
+                    string tip = GetRandomTip(matchedTopic);
+                    Console.WriteLine($"\n💬 {tip}");
+                    Console.WriteLine("\n(You can say 'tell me more' or 'another tip' for more on this topic.)");
+                    Console.WriteLine();
+                    continue;
+                }
+
+                // 4. Default / unknown input
+                Console.WriteLine("\n💬 I'm not sure I understand. You can ask about phishing, passwords, safe browsing, social engineering, scams, or privacy.");
+                Console.WriteLine();
             }
         }
 
-        private void DisplayMenu()
+        private string GetRandomTip(string topic)
         {
-            Console.ForegroundColor = ConsoleColor.Blue;
-            Console.WriteLine("--------------------------------------------------------------");
-            Console.WriteLine($"Cybersecurity Menu for {userName}");
-            Console.WriteLine("--------------------------------------------------------------");
-            Console.ResetColor();
-
-            Console.WriteLine("1. Learn about phishing");
-            Console.WriteLine("2. Learn about password safety");
-            Console.WriteLine("3. Learn about safe browsing");
-            Console.WriteLine("4. Learn about social engineering");
-            Console.WriteLine("5. View scam safety tips");
-            Console.WriteLine("6. Take a quick quiz");
-            Console.WriteLine("7. Exit");
-            Console.WriteLine();
-        }
-
-        private void ExplainPhishing()
-        {
-            PrintSectionTitle("Phishing Awareness");
-
-            Console.WriteLine("Phishing is when attackers try to trick you into giving away");
-            Console.WriteLine("personal information such as passwords, banking details, or OTPs.");
-            Console.WriteLine();
-            Console.WriteLine("Common warning signs:");
-            Console.WriteLine("- Urgent language such as 'Act now' or 'Your account will be blocked'");
-            Console.WriteLine("- Suspicious links or email addresses");
-            Console.WriteLine("- Requests for passwords or banking details");
-            Console.WriteLine();
-            Console.WriteLine($"{userName}, always double-check the sender and never click suspicious links.");
-            Pause();
-        }
-
-        private void ExplainPasswords()
-        {
-            PrintSectionTitle("Password Safety");
-
-            Console.WriteLine("A strong password should be:");
-            Console.WriteLine("- Long");
-            Console.WriteLine("- Unique");
-            Console.WriteLine("- Hard to guess");
-            Console.WriteLine();
-            Console.WriteLine("Good practice:");
-            Console.WriteLine("- Use uppercase and lowercase letters");
-            Console.WriteLine("- Include numbers and special characters");
-            Console.WriteLine("- Do not reuse the same password everywhere");
-            Console.WriteLine("- Use multi-factor authentication where possible");
-            Console.WriteLine();
-            Console.WriteLine($"{userName}, a password manager can also help you store secure passwords safely.");
-            Pause();
-        }
-
-        private void ExplainSafeBrowsing()
-        {
-            PrintSectionTitle("Safe Browsing");
-
-            Console.WriteLine("Safe browsing means using the internet carefully to avoid scams,");
-            Console.WriteLine("malware and fake websites.");
-            Console.WriteLine();
-            Console.WriteLine("Tips:");
-            Console.WriteLine("- Check if the website uses HTTPS");
-            Console.WriteLine("- Do not download files from unknown websites");
-            Console.WriteLine("- Avoid public Wi-Fi for sensitive transactions");
-            Console.WriteLine("- Keep your browser and antivirus updated");
-            Console.WriteLine();
-            Console.WriteLine($"{userName}, always verify a website before entering personal information.");
-            Pause();
-        }
-
-        private void ExplainSocialEngineering()
-        {
-            PrintSectionTitle("Social Engineering");
-
-            Console.WriteLine("Social engineering happens when attackers manipulate people");
-            Console.WriteLine("into giving away confidential information.");
-            Console.WriteLine();
-            Console.WriteLine("Examples include:");
-            Console.WriteLine("- Someone pretending to be from your bank");
-            Console.WriteLine("- Fake tech support calls");
-            Console.WriteLine("- Messages asking for urgent payments or OTP codes");
-            Console.WriteLine();
-            Console.WriteLine("The best defence is to stay calm, verify identities, and never");
-            Console.WriteLine("share private information under pressure.");
-            Pause();
-        }
-
-        private void ScamSafetyTips()
-        {
-            PrintSectionTitle("Quick Scam Safety Tips");
-
-            Console.WriteLine("1. Never share your OTP or banking PIN.");
-            Console.WriteLine("2. Verify links before clicking on them.");
-            Console.WriteLine("3. Ignore prizes you did not enter.");
-            Console.WriteLine("4. Be careful with attachments from unknown senders.");
-            Console.WriteLine("5. Report suspicious activity immediately.");
-            Console.WriteLine();
-            Console.WriteLine($"{userName}, being cautious online is one of the best ways to protect yourself.");
-            Pause();
-        }
-
-        private void QuickQuiz()
-        {
-            PrintSectionTitle("Quick Quiz");
-
-            Console.WriteLine("Question: Should you share your OTP with someone claiming to be from the bank?");
-            Console.Write("Enter yes or no: ");
-
-            string? answer = Console.ReadLine();
-
-            if (string.IsNullOrWhiteSpace(answer))
+            if (topicTips.ContainsKey(topic))
             {
-                ShowError("Quiz answer cannot be empty.");
-                return;
+                var tips = topicTips[topic];
+                Random rand = new Random();
+                return tips[rand.Next(tips.Count)];
             }
+            return "Stay alert – and always verify before you trust.";
+        }
 
-            answer = answer.Trim().ToLower();
+        private bool IsRequestingMore(string input)
+        {
+            return input.Contains("more") || input.Contains("another") ||
+                   input.Contains("tell me again") || input.Contains("explain more") ||
+                   input.Contains("another tip");
+        }
 
-            if (answer == "no")
+        private string? DetectSentiment(string input)
+        {
+            if (input.Contains("worried") || input.Contains("scared") || input.Contains("nervous"))
             {
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("Correct! You should never share your OTP with anyone.");
+                return $"It's completely normal to feel worried, {userName}. Cyber threats are real, but you're taking the right step. {GetRandomTip("phishing")}";
             }
-            else if (answer == "yes")
+            if (input.Contains("frustrated") || input.Contains("confused"))
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Incorrect. Banks do not ask for your OTP in that way.");
+                return $"I understand it can be frustrating, {userName}. Let's start simple: {GetRandomTip("password")}";
             }
-            else
+            if (input.Contains("curious") || input.Contains("interesting"))
             {
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine("Please answer with 'yes' or 'no' next time.");
+                return $"Great curiosity, {userName}! Did you know that 90% of data breaches start with a phishing email? {GetRandomTip("phishing")}";
             }
-
-            Console.ResetColor();
-            Pause();
+            return null;
         }
 
         private void DisplayGoodbyeMessage()
         {
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine();
-            Console.WriteLine($"Goodbye, {userName}! Thank you for using the Cybersecurity Awareness Bot.");
-            Console.WriteLine("Stay alert, stay informed, and stay safe online.");
-            Console.ResetColor();
-        }
-
-        private void PrintSectionTitle(string title)
-        {
-            Console.WriteLine();
-            Console.ForegroundColor = ConsoleColor.Magenta;
-            Console.WriteLine("==============================================================");
-            Console.WriteLine(title);
-            Console.WriteLine("==============================================================");
+            Console.WriteLine($"\nGoodbye, {userName}! Stay alert, stay informed, and stay safe online.");
+            if (!string.IsNullOrEmpty(favoriteTopic))
+                Console.WriteLine($"Remember what you learned about {favoriteTopic} – practice it every day.");
             Console.ResetColor();
         }
 
@@ -324,16 +270,6 @@ namespace CyberSecurityAwarenessBot
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine(message);
             Console.ResetColor();
-            Console.WriteLine();
-        }
-
-        private void Pause()
-        {
-            Console.ForegroundColor = ConsoleColor.DarkGray;
-            Console.WriteLine("\nPress Enter to go back to the menu...");
-            Console.ResetColor();
-
-            Console.ReadLine();
             Console.WriteLine();
         }
     }
