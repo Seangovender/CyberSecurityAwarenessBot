@@ -1,55 +1,40 @@
-# CyberSecurityAwarenessBot
+Cybersecurity Awareness Chatbot – Part 2 (WPF)
 
-## Overview
-This project is a simple console-based chatbot built in C# to help users understand basic cybersecurity concepts. The chatbot focuses on common online threats such as phishing, weak passwords, scams, social engineering, and unsafe browsing.
+Student Information
+- Name: Sean Govender
+- Student Number: ST10491364
+- Module: PROG6221 – Programming 2A
 
-The goal of this application is to give users simple and practical information so they can stay safer when using the internet.
+Overview
+This project educates South African citizens about cybersecurity threats (phishing, weak passwords, scams, social engineering, unsafe browsing, privacy).  
+It consists of two parts:
+- Part 1 – Console application (basic chatbot with menu).
+- Part 2 – WPF GUI application with advanced features.
 
-## Features
-- Voice greeting using a WAV audio file
-- ASCII banner displayed when the program starts
-- Personalised interaction (asks for the user's name)
-- Menu with different cybersecurity topics
-- Input validation to handle incorrect or empty input
-- Colour formatting for better readability
-- GitHub Actions workflow to automatically build the project
+Features (Part 2 – WPF)
+- Graphical User Interface – Dark theme, colours, proper spacing, ASCII art, voice greeting (`welcome.wav`)
+- Keyword recognition – Responds to: `phishing`, `password`, `safe browsing`, `social engineering`, `scam`, `privacy`
+- Random responses – Each topic has a list of tips; a random tip is selected each time
+- Conversation flow – Handles follow‑up commands like `"tell me more"`, `"another tip"`, `"explain more"`
+- Memory – Remembers user's name and favourite topic
+- Sentiment detection – Empathetic responses to `"worried"`, `"frustrated"`, `"curious"`
+- Error handling – Default message for unrecognised input (no crashes)
+- Code optimisation – Uses `Dictionary`, `List`, OOP, and XML comments
 
-## Technologies Used
-- C#
-- .NET 8 (Windows)
-- Visual Studio
-- GitHub
-- GitHub Actions
+How to Run (Part 2 – WPF)
+1. Open the solution `CyberSecurityAwarenessBot.sln` in Visual Studio.
+2. Ensure `welcome.wav` is in the `CyberSecurityChatbot_Part2` project root and set Copy to Output Directory = `Copy if newer`.
+3. Set `CyberSecurityChatbot_Part2` as the startup project.
+4. Press F5 to build and run.
+5. Type your name, then ask about any cybersecurity topic (e.g., `"tell me about passwords"`).
 
-## How to Run the Program
-1. Open the project in Visual Studio.
-2. Make sure `welcome.wav` is inside the project folder.
-3. Build the solution.
-4. Run the program using **Ctrl + F5**.
-5. Follow the menu options shown in the console.
-
-## Project Structure
-- `Program.cs` – Entry point of the application
-- `CyberSecurityBot.cs` – Contains all chatbot logic
-- `welcome.wav` – Audio greeting file
-- `README.md` – Project documentation
-- `.github/workflows/dotnet-ci.yml` – CI workflow file
-
-## Purpose of the Project
-The purpose of this project is to demonstrate basic C# programming concepts such as methods, user input, validation, and file handling, while also creating something useful that promotes cybersecurity awareness.
-
-## Notes
-- The audio greeting works only on Windows systems.
-- If the audio file is missing, the program will still run without crashing.
-
-## Future Improvements
-- Add more quiz questions
-- Improve the user interface
-- Store user responses
-- Convert the chatbot into a GUI application
-Updated README with final improvements and structure
-
-## Repository Layout
-- `CyberSecurityAwarenessBot/` – main C# project files
-- `.github/workflows/` – GitHub Actions CI workflow
-- `CyberSecurityAwarenessBot.sln` – Visual Studio solution file
+Example Conversation
+Assistant: Hello! What's your name?
+You: Sean
+Assistant: Nice to meet you, Sean! I can help you with topics like...
+You: tell me about passwords
+Assistant: Use a different password for every account – don't reuse!
+You: tell me more
+Assistant: Here's another tip about password: A strong password has 12+ characters...
+You: I'm worried about scams
+Assistant: It's completely normal to feel worried, Sean... Always check the sender's email...

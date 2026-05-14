@@ -3,4 +3,5 @@
     <File Path="README.md" />
   </Folder>
   <Project Path="CyberSecurityAwarenessBot/CyberSecurityAwarenessBot.csproj" />
+  <Project Path="CyberSecurityChatbot_Part2/CyberSecurityChatbot_Part2.csproj" Id="7eebd18c-eedc-47fb-80ec-4310142672d7" />
 </Solution>
