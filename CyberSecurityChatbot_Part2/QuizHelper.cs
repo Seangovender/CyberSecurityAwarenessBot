@@ -5,7 +5,7 @@ namespace CyberSecurityChatbot_Part2
 {
     public class QuizHelper
     {
-        private List<QuizQuestion> questions = new List<QuizQuestion>(); // ✅ Initialised
+        private List<QuizQuestion> questions = new List<QuizQuestion>(); 
         private int currentIndex = 0;
         private int score = 0;
         private bool active = false;

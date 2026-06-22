@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using MySql.Data.MySqlClient;
 
-namespace CyberSecurityChatbot_Part2   // ← MUST match your project's namespace
+namespace CyberSecurityChatbot_Part2   
 {
     public class DatabaseHelper
     {

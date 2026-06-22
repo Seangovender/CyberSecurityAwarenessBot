@@ -86,7 +86,7 @@ namespace CyberSecurityAwarenessBot
                     using (SoundPlayer player = new SoundPlayer(path))
                     {
                         player.Load();
-                        player.Play(); // plays asynchronously
+                        player.Play(); 
                     }
                 }
                 else
