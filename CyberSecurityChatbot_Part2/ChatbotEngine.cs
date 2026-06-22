@@ -6,7 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using MySql.Data.MySqlClient;   // Required for DatabaseHelper
+using MySql.Data.MySqlClient;
 
 namespace CyberSecurityChatbot_Part2
 {
@@ -137,9 +137,9 @@ namespace CyberSecurityChatbot_Part2
                     return taskResponse;
             }
 
-            // Quiz commands
+            // Quiz commands – trigger if quiz is active OR user types start/take/play/quiz
             if (lower.Contains("start quiz") || lower.Contains("take quiz") || lower.Contains("play quiz") ||
-                lower.Contains("quiz") || lower == "a" || lower == "b" || lower == "c" || lower == "d")
+                lower.Contains("quiz") || quiz.IsQuizActive())
             {
                 string? quizResponse = ProcessQuizCommand(userInput);
                 if (quizResponse != null)
@@ -224,7 +224,6 @@ namespace CyberSecurityChatbot_Part2
         }
 
         // ---- PART 3: Task Assistant ----
-        // Return nullable string because we may return null if command not recognised
         private string? ProcessTaskCommand(string input)
         {
             string lower = input.ToLower().Trim();
@@ -305,7 +304,6 @@ namespace CyberSecurityChatbot_Part2
                     }
                 }
 
-                // Default reminder: 7 days
                 if (reminderDate == null)
                     reminderDate = DateTime.Now.AddDays(7);
 
@@ -378,10 +376,10 @@ namespace CyberSecurityChatbot_Part2
                 return "❌ Could not delete task. Example: 'delete task 1'";
             }
 
-            return null; // Not a task command
+            return null;
         }
 
-        // ---- PART 3: Quiz ----
+        // ---- PART 3: Quiz (IMPROVED NLP – full-sentence matching) ----
         private string? ProcessQuizCommand(string input)
         {
             string lower = input.ToLower().Trim();
@@ -397,7 +395,8 @@ namespace CyberSecurityChatbot_Part2
                     AddToLog("Quiz started");
                     return $"🎮 Let's test your cybersecurity knowledge!\n\n{question.Question}\n" +
                            string.Join("\n", question.Options) +
-                           "\n\nType the letter (A/B/C/D) or number (0/1/2/3) of your answer.";
+                           "\n\nType the letter (A/B/C/D) or number (0/1/2/3) of your answer.\n" +
+                           "You can also type the full answer text.";
                 }
                 return "❌ Quiz could not start.";
             }
@@ -406,12 +405,110 @@ namespace CyberSecurityChatbot_Part2
             if (quiz.IsQuizActive())
             {
                 int selectedIndex = -1;
+
+                // 1. Letter answers
                 if (lower == "a" || lower == "0") selectedIndex = 0;
                 else if (lower == "b" || lower == "1") selectedIndex = 1;
                 else if (lower == "c" || lower == "2") selectedIndex = 2;
                 else if (lower == "d" || lower == "3") selectedIndex = 3;
+                // 2. True / False
+                else if (lower == "true" || lower == "t") selectedIndex = 0;
+                else if (lower == "false" || lower == "f") selectedIndex = 1;
+                // 3. Number input
                 else if (int.TryParse(lower, out int num) && num >= 0 && num <= 3)
                     selectedIndex = num;
+                // 4. ✨ IMPROVED: Full‑sentence answer matching (more flexible)
+                else
+                {
+                    var currentQuestion = quiz.GetCurrentQuestion();
+                    if (currentQuestion != null)
+                    {
+                        for (int i = 0; i < currentQuestion.Options.Count; i++)
+                        {
+                            string optionText = currentQuestion.Options[i];
+                            string cleanOption = optionText;
+
+                            // Remove the letter prefix like "A) " or "A. " to get clean answer text
+                            int idx = optionText.IndexOfAny(new char[] { ')', '.' });
+                            if (idx >= 0 && idx + 2 <= optionText.Length)
+                            {
+                                cleanOption = optionText.Substring(idx + 2).Trim();
+                            }
+
+                            // Check for exact match or keyword match
+                            bool matchFound = false;
+
+                            // 4a. Exact match (case-insensitive)
+                            if (lower.Contains(cleanOption.ToLower()))
+                                matchFound = true;
+
+                            // 4b. If no exact match, try keyword matching
+                            if (!matchFound)
+                            {
+                                // Split clean option into keywords
+                                string[] keywords = cleanOption.Split(new char[] { ' ', ',', '(', ')' }, StringSplitOptions.RemoveEmptyEntries);
+                                int matchCount = 0;
+                                foreach (string keyword in keywords)
+                                {
+                                    if (keyword.Length > 2 && lower.Contains(keyword.ToLower()))
+                                        matchCount++;
+                                }
+                                // If more than 50% of keywords match, consider it a match
+                                if (keywords.Length > 0 && (double)matchCount / keywords.Length >= 0.5)
+                                    matchFound = true;
+                            }
+
+                            // 4c. Special handling for "12+" vs "12" etc.
+                            if (!matchFound && lower.Contains("12") && cleanOption.Contains("12"))
+                                matchFound = true;
+
+                            // 4d. Special handling for "uppercase", "lowercase", "numbers", "symbols"
+                            if (!matchFound)
+                            {
+                                string[] keyTerms = { "uppercase", "lowercase", "numbers", "symbols", "special", "characters", "letters" };
+                                int termMatchCount = 0;
+                                foreach (string term in keyTerms)
+                                {
+                                    if (lower.Contains(term) && cleanOption.ToLower().Contains(term))
+                                        termMatchCount++;
+                                }
+                                if (termMatchCount >= 2)
+                                    matchFound = true;
+                            }
+
+                            if (matchFound)
+                            {
+                                selectedIndex = i;
+                                break;
+                            }
+                        }
+
+                        // 4e. If still no match, try matching first few words of the option
+                        if (selectedIndex == -1)
+                        {
+                            for (int i = 0; i < currentQuestion.Options.Count; i++)
+                            {
+                                string optionText = currentQuestion.Options[i];
+                                string cleanOption = optionText;
+                                int idx = optionText.IndexOfAny(new char[] { ')', '.' });
+                                if (idx >= 0 && idx + 2 <= optionText.Length)
+                                    cleanOption = optionText.Substring(idx + 2).Trim();
+
+                                // Get first 3 words of the clean option
+                                string[] words = cleanOption.Split(' ');
+                                if (words.Length >= 3)
+                                {
+                                    string firstFewWords = string.Join(" ", words.Take(3));
+                                    if (lower.Contains(firstFewWords.ToLower()))
+                                    {
+                                        selectedIndex = i;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
 
                 if (selectedIndex >= 0)
                 {
@@ -421,7 +518,18 @@ namespace CyberSecurityChatbot_Part2
                         AddToLog($"Quiz completed. Score: {quiz.GetScore()}/{quiz.GetTotalQuestions()}");
                     return response;
                 }
-                return "Please answer with A, B, C, D (or 0, 1, 2, 3).";
+                else
+                {
+                    // Show the options again if user is confused
+                    var currentQuestion = quiz.GetCurrentQuestion();
+                    if (currentQuestion != null)
+                    {
+                        return $"I didn't recognise that answer. Please choose from:\n" +
+                               string.Join("\n", currentQuestion.Options) +
+                               "\n\nType the letter (A/B/C/D) or type the full answer text.";
+                    }
+                    return "Please answer with A, B, C, D (or 0, 1, 2, 3) or type the full answer text.";
+                }
             }
 
             return null; // Not a quiz command
