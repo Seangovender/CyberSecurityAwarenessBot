@@ -9,10 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    
-  </ItemGroup>
-
-  <ItemGroup>
+    <PackageReference Include="MySql.Data" Version="9.7.0" />
     <PackageReference Include="System.Windows.Extensions" Version="8.0.0" />
   </ItemGroup>
 
