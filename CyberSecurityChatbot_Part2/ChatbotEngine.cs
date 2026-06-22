@@ -1,30 +1,31 @@
 ﻿// Cybersecurity Awareness Chatbot - Part 2 (WPF) + Part 3
 // Module: PROG6221
 // ST10491364
-// Date: June 2026
+// Date: 22 June 2026
 
+using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using MySql.Data.MySqlClient;
+using System.Windows.Data;
 
 namespace CyberSecurityChatbot_Part2
 {
     public class ChatbotEngine
     {
-        // ---- Properties ----
+        // Properties 
         public string UserName { get; private set; } = string.Empty;
         public string FavoriteTopic { get; private set; } = string.Empty;
         private string lastTopic = string.Empty;
         private bool waitingForName = true;
 
-        // ---- Topic tips dictionary ----
+        // Topic tips dictionary 
         private readonly Dictionary<string, List<string>> topicTips;
 
-        // ---- Activity log ----
+        //  Activity log 
         private readonly List<string> activityLog = new List<string>();
 
-        // ---- Part 3 helpers ----
+         
         private readonly DatabaseHelper db = new DatabaseHelper();
         private readonly QuizHelper quiz = new QuizHelper();
 
@@ -89,7 +90,7 @@ namespace CyberSecurityChatbot_Part2
             };
         }
 
-        // ---- Main processing method ----
+        // Main processing method 
         public string ProcessInput(string userInput)
         {
             if (waitingForName)
@@ -125,7 +126,7 @@ namespace CyberSecurityChatbot_Part2
                 lower.Contains("good morning") || lower.Contains("good afternoon") || lower.Contains("good evening"))
                 return $"Hello {UserName}! How can I help you with cybersecurity today?";
 
-            // ---- Part 3: Task, Quiz, Activity Log commands ----
+            // Part 3: Task, Quiz, Activity Log commands 
             // Task commands
             if (lower.Contains("add task") || lower.Contains("create task") || lower.Contains("new task") ||
                 lower.Contains("remind me to") ||
@@ -185,7 +186,7 @@ namespace CyberSecurityChatbot_Part2
             return "I'm not sure I understand. You can ask about phishing, passwords, safe browsing, social engineering, scams, or privacy. Or say 'hello' to greet me!";
         }
 
-        // ---- Helper methods (existing) ----
+        // Helper methods
         private string GetRandomTip(string topic)
         {
             if (topicTips.TryGetValue(topic, out List<string>? tips) && tips.Count > 0)
@@ -223,7 +224,7 @@ namespace CyberSecurityChatbot_Part2
             return null;
         }
 
-        // ---- PART 3: Task Assistant ----
+        //  PART 3:Task Assistant 
         private string? ProcessTaskCommand(string input)
         {
             string lower = input.ToLower().Trim();
@@ -379,7 +380,7 @@ namespace CyberSecurityChatbot_Part2
             return null;
         }
 
-        // ---- PART 3: Quiz (IMPROVED NLP – full-sentence matching) ----
+        // PART 3: Quiz
         private string? ProcessQuizCommand(string input)
         {
             string lower = input.ToLower().Trim();
@@ -589,3 +590,13 @@ namespace CyberSecurityChatbot_Part2
         }
     }
 }
+
+//Reference list:
+// Cybersecurity & Infrastructure Security Agency (CISA). 2024. Phishing Tips.
+// Available at: https://www.cisa.gov/phishing (Accessed: 22 June 2026).
+
+//National Cyber Security Centre (NCSC). 2025. Password Guidance.
+//Available at: https://www.ncsc.gov.uk/guidance/password-guidance (Accessed: 22 June 2026).
+
+//South African Banking Risk Information Centre (SABRIC). 2025. Cybersecurity Awareness for South Africans.
+//Available at: https://www.sabric.co.za (Accessed: 22 June 2026).
